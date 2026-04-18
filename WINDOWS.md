@@ -45,6 +45,14 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 pip install -r requirements.txt
 ```
 
+**Obligatorio:** `requirements.txt` incluye **FastAPI** y **uvicorn**. Si ves `No module named uvicorn`, el venv no tiene las dependencias: vuelve a ejecutar `pip install -r requirements.txt` con el venv activado.
+
+Comprueba:
+
+```powershell
+.\venv\Scripts\python.exe -c "import uvicorn; print('ok')"
+```
+
 ## 4) Node
 
 ```powershell
@@ -77,7 +85,9 @@ Debe abrirse la ventana de **Electron**. La UI sale de Vite (`http://127.0.0.1:5
 .\start.ps1
 ```
 
-(si da error de política de ejecución, usa la opción A o `powershell -ExecutionPolicy Bypass -File .\start.ps1`)
+Arranca **uvicorn** en segundo plano (sin ventana extra) y luego **Vite + Electron**. Cierra con **Ctrl+C** (también detiene uvicorn).
+
+Si aparece error de política de ejecución: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` o `powershell -ExecutionPolicy Bypass -File .\start.ps1`.
 
 **Opción C — Git Bash** (si instalaste Git for Windows)
 
