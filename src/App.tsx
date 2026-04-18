@@ -11,6 +11,7 @@ import axios from "axios";
 import { api, getErrorPayload } from "./hooks/useBackend";
 import { useGpuStatus } from "./hooks/useGPUDetect";
 import { useEditorStore } from "./store/editorStore";
+import { useRunStore } from "./store/runStore";
 import { useSettingsStore } from "./store/settingsStore";
 import { API_BASE } from "./config";
 
@@ -37,6 +38,8 @@ export function App() {
   const setFromServer = useSettingsStore((s) => s.setFromServer);
 
   const gpu = useGpuStatus(3000);
+  const clearLastRunLog = useRunStore((s) => s.clearLastRunLog);
+  const appendLastRunLog = useRunStore((s) => s.appendLastRunLog);
 
   useEffect(() => {
     void (async () => {
@@ -126,6 +129,9 @@ export function App() {
     abortRunRef.current = new AbortController();
     const term = termRef.current;
     term?.reset();
+    clearLastRunLog();
+    const header = `\r\n[run] ${filepath}\r\n`;
+    appendLastRunLog(header);
     term?.writeln(`\r\n\x1b[36m[run]\x1b[0m ${filepath}`);
 
     try {
@@ -142,9 +148,11 @@ export function App() {
         if (t === "output" && typeof ev.text === "string") {
           const stream = ev.stream === "stderr" ? "\x1b[31m" : "";
           term?.write(stream + ev.text + "\x1b[0m");
+          appendLastRunLog(ev.text);
         } else if (t === "exit") {
           const rc = ev.returncode as number;
           term?.writeln(`\r\n\x1b[33m[exit code ${rc}]\x1b[0m`);
+          appendLastRunLog(`\r\n[exit code ${rc}]\r\n`);
           if (rc !== 0) {
             setExecError((prev) =>
               prev === "Execution timed out." ? prev : `Execution failed (exit code ${rc})`,
@@ -159,11 +167,13 @@ export function App() {
             setExecError(`Run failed: ${msg}`);
           }
           term?.writeln(`\r\n\x1b[31m${code}: ${msg}\x1b[0m`);
+          appendLastRunLog(`\r\n${code}: ${msg}\r\n`);
         }
       });
     } catch (e) {
       if ((e as Error).name === "AbortError") {
         term?.writeln("\r\n[aborted]");
+        appendLastRunLog("\r\n[aborted]\r\n");
       } else if (axios.isAxiosError(e)) {
         const data = e.response?.data as { error?: string; message?: string } | undefined;
         if (data?.error === "GPU_NOT_AVAILABLE") {
@@ -172,10 +182,12 @@ export function App() {
         const msg = data?.message ?? e.message;
         setExecError(msg);
         term?.writeln(`\r\n\x1b[31m${msg}\x1b[0m`);
+        appendLastRunLog(`\r\n${msg}\r\n`);
       } else {
         const msg = getErrorPayload(e).message;
         setExecError(msg);
         term?.writeln(`\r\n\x1b[31m${msg}\x1b[0m`);
+        appendLastRunLog(`\r\n${msg}\r\n`);
       }
     } finally {
       setRunning(false);

@@ -45,7 +45,11 @@ def _check_ollama_reachable() -> None:
     try:
         ollama.list()
     except Exception as exc:
-        raise ConnectionError("Ollama service not reachable") from exc
+        raise ConnectionError(
+            "Ollama service not reachable. Start Ollama and ensure it is listening on localhost:11434 "
+            "(e.g. open the Ollama app, or run `ollama serve`), then pull a model "
+            f"(e.g. `ollama pull {config.get_model_name()}`)."
+        ) from exc
 
 
 def _ollama_stream_messages(messages: List[Dict[str, str]]) -> queue.Queue:

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { AgentStructuredResponse } from "../../types/agent";
 import { useAgentStore } from "../../store/agentStore";
 import { useEditorStore } from "../../store/editorStore";
+import { useRunStore } from "../../store/runStore";
 import { AgentMessageBubble } from "./AgentMessage";
 import { API_BASE } from "../../config";
 
@@ -67,6 +68,7 @@ export function AgentPanel({ onRunAfterAgent }: AgentPanelProps) {
   const bumpRemote = useEditorStore((s) => s.bumpRemote);
 
   const [input, setInput] = useState("");
+  const lastRunLog = useRunStore((s) => s.lastRunLog);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -199,6 +201,16 @@ export function AgentPanel({ onRunAfterAgent }: AgentPanelProps) {
     void streamRequest(text, true);
   }
 
+  function pasteLastRun() {
+    const trimmed = lastRunLog.trim();
+    if (!trimmed || streaming) {
+      return;
+    }
+    setInput(
+      `Please fix the following execution error/output. Return corrected code.\n\n--- RUN LOG ---\n${trimmed}\n--- END RUN LOG ---\n`,
+    );
+  }
+
   async function applyCode(code: string) {
     setContent(code, { markDirty: false });
     bumpRemote();
@@ -238,6 +250,15 @@ export function AgentPanel({ onRunAfterAgent }: AgentPanelProps) {
           placeholder="Ask TorchForge about PyTorch / Triton…"
         />
         <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="border border-tf-border bg-tf-elevated px-3 py-1 text-xs text-tf-text disabled:opacity-50"
+            disabled={streaming || !lastRunLog.trim()}
+            onClick={pasteLastRun}
+            title="Paste last Run output into the agent input"
+          >
+            Paste last Run log
+          </button>
           <button
             type="button"
             className="border border-tf-accent bg-tf-accent px-3 py-1 text-xs font-medium text-tf-base disabled:opacity-50"

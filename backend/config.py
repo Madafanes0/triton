@@ -70,7 +70,8 @@ def default_config() -> dict[str, Any]:
         "max_tokens": 2048,
         "temperature": 0.2,
         "xgrammar_enabled": True,
-        "execution_timeout_sec": 120,
+        # Triton compilation / first-run JIT can be slow on some machines.
+        "execution_timeout_sec": 600,
         "gpu_required": True,
         "font_size_px": 14,
         "line_height": 1.5,

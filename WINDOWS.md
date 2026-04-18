@@ -106,6 +106,8 @@ Si aparece error de política de ejecución: `Set-ExecutionPolicy -Scope Current
 ./start.sh
 ```
 
+> Nota: `./start.sh` en Windows puede terminar usando **otro Python** (fuera del `venv`) dependiendo de tu shell/WSL/MSYS. Si ves errores raros (por ejemplo `exit code -1` al ejecutar), usa preferiblemente **`.\start.ps1`** desde PowerShell.
+
 ## 6) Probar ejecución GPU
 
 Con el backend en marcha, en el IDE usa **Run** sobre `project/main.py` o prueba en el navegador / otra terminal:
