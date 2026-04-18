@@ -1,9 +1,8 @@
 import axios, { AxiosError } from "axios";
-
-const BASE = "http://127.0.0.1:7433";
+import { API_BASE } from "../config";
 
 export const api = axios.create({
-  baseURL: BASE,
+  baseURL: API_BASE,
   timeout: 0,
   headers: { "Content-Type": "application/json" },
 });

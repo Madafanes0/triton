@@ -48,13 +48,15 @@ async def _run_subprocess(
 ) -> None:
     proc: Optional[asyncio.subprocess.Process] = None
     try:
+        child_env = {**os.environ, "PYTHONUNBUFFERED": "1"}
         proc = await asyncio.create_subprocess_exec(
             sys.executable,
+            "-u",
             str(filepath),
             cwd=str(_project_dir()),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
-            env={**os.environ},
+            env=child_env,
         )
         assert proc.stdout and proc.stderr
 

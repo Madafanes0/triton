@@ -3,8 +3,7 @@ import type { AgentStructuredResponse } from "../../types/agent";
 import { useAgentStore } from "../../store/agentStore";
 import { useEditorStore } from "../../store/editorStore";
 import { AgentMessageBubble } from "./AgentMessage";
-
-const API = "http://127.0.0.1:7433";
+import { API_BASE } from "../../config";
 
 function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
@@ -104,7 +103,7 @@ export function AgentPanel({ onRunAfterAgent }: AgentPanelProps) {
     let assembled = "";
 
     try {
-      const res = await fetch(`${API}/agent/chat`, {
+      const res = await fetch(`${API_BASE}/agent/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

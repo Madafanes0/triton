@@ -12,8 +12,7 @@ import { api, getErrorPayload } from "./hooks/useBackend";
 import { useGpuStatus } from "./hooks/useGPUDetect";
 import { useEditorStore } from "./store/editorStore";
 import { useSettingsStore } from "./store/settingsStore";
-
-const API = "http://127.0.0.1:7433";
+import { API_BASE } from "./config";
 
 export function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -90,7 +89,8 @@ export function App() {
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split("\n");
       buffer = lines.pop() ?? "";
-      for (const line of lines) {
+      for (let line of lines) {
+        line = line.replace(/\r$/, "");
         if (!line.startsWith("data:")) {
           continue;
         }
@@ -98,6 +98,18 @@ export function App() {
         if (!payloadText) {
           continue;
         }
+        try {
+          const obj = JSON.parse(payloadText) as Record<string, unknown>;
+          onData(obj);
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+    const tail = buffer.trim();
+    if (tail.startsWith("data:")) {
+      const payloadText = tail.replace(/^data:\s*/, "").trim();
+      if (payloadText) {
         try {
           const obj = JSON.parse(payloadText) as Record<string, unknown>;
           onData(obj);
@@ -122,7 +134,7 @@ export function App() {
         { filepath, content },
         { signal: abortRunRef.current.signal },
       );
-      const res = await fetch(`${API}/execute/stream/${data.run_id}`, {
+      const res = await fetch(`${API_BASE}/execute/stream/${data.run_id}`, {
         signal: abortRunRef.current.signal,
       });
       await parseSseStream(res.body, (ev) => {
