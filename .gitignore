@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+venv/
+.venv/
+**/node_modules/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# TorchForge / Electron / Vite
+torchforge/dist/
+torchforge/dist-electron/
+torchforge/release/
+torchforge/app_config.json
+
+# Build / caches
+dist/
+build/
+*.tsbuildinfo
+.cache/
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Project run artifacts
+**/.torchforge/
+torchforge/project/.torchforge/
