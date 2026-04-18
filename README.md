@@ -9,13 +9,17 @@ TorchForge is a **local-only** desktop IDE for **PyTorch + Triton** kernel devel
 - **NVIDIA GPU + CUDA** (execution is blocked without CUDA — Triton kernels are not executed on CPU)
 - Optional: **Ollama** or a local **GGUF** model for **llama.cpp**
 
-## Quick start
+## Quick start (macOS / Linux)
 
 ```bash
 chmod +x setup.sh start.sh
 ./setup.sh
 ./start.sh
 ```
+
+## Windows (GPU)
+
+See **[WINDOWS.md](./WINDOWS.md)** for PowerShell setup, PyTorch CUDA wheels, and `start.ps1`.
 
 This will:
 
