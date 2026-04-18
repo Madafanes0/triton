@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-base: #0d0f12;
+  --bg-panel: #131619;
+  --bg-elevated: #1a1e24;
+  --border: #252b34;
+  --accent: #f97316;
+  --accent-blue: #38bdf8;
+  --text-primary: #e2e8f0;
+  --text-muted: #64748b;
+  --success: #22c55e;
+  --error: #ef4444;
+  --warning: #eab308;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+.tf-body {
+  margin: 0;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+}
+
+body::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.04;
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.06) 0px,
+    rgba(255, 255, 255, 0.06) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+* {
+  border-radius: 0 !important;
+}
