@@ -1,0 +1,3 @@
+# Optional: local GGUF inference (Settings → llama.cpp in TorchForge)
+# Windows: install "Visual Studio Build Tools" with C++ workload + CMake, or use Ollama instead.
+llama-cpp-python>=0.3.0

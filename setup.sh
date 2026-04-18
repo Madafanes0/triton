@@ -28,7 +28,7 @@ TorchForge setup complete.
 Next steps:
 1) Install and run Ollama (https://ollama.com) and pull a model, e.g.:
      ollama pull codellama:13b-instruct
-   Or place a GGUF file and set the path in Settings → llama.cpp.
+   For GGUF via llama.cpp, install compilers then: pip install -r requirements-llamacpp.txt
 
 2) Ensure NVIDIA drivers + CUDA are available and `nvidia-smi` works.
 

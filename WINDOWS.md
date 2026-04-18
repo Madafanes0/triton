@@ -49,6 +49,13 @@ pip install -r requirements.txt
 
 Para **ejecutar** kernels Triton en `project/main.py` en Windows necesitas un entorno **Linux** (p. ej. **WSL2** con CUDA) o seguir la guía actual de PyTorch para tu sistema; la IDE **sí puede abrirse y usar el backend** sin Triton instalado en el venv de Windows.
 
+### `llama-cpp-python` (error CMake / nmake / compiler)
+
+Ese paquete **no** va en `requirements.txt` por defecto: en Windows suele **compilarse** y exige **Visual Studio Build Tools** (carga de trabajo “Desarrollo de escritorio con C++”), **CMake** y a veces pasos extra.
+
+- Si usas el agente con **Ollama** (recomendado en Windows), **no instales** `llama-cpp-python`.
+- Solo si quieres **llama.cpp + GGUF** en TorchForge: instala las herramientas de compilación y luego `pip install -r requirements-llamacpp.txt`.
+
 **Si ves `No module named uvicorn`:** ejecuta `pip install -r requirements.txt` de nuevo (o `pip install "uvicorn[standard]" fastapi pydantic watchdog`).
 
 Comprueba:
