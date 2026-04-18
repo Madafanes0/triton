@@ -45,7 +45,11 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 pip install -r requirements.txt
 ```
 
-**Obligatorio:** `requirements.txt` incluye **FastAPI** y **uvicorn**. Si ves `No module named uvicorn`, el venv no tiene las dependencias: vuelve a ejecutar `pip install -r requirements.txt` con el venv activado.
+**Sobre `triton` y el error “No matching distribution”:** no tiene que ver con uvicorn. **Triton** en PyPI solo trae ruedas oficiales para **Linux**; en **Windows** `pip` no encuentra `triton` y antes fallaba **todo** el `install -r`. El `requirements.txt` del repo marca `triton` solo para Linux, así que en Windows el resto (FastAPI, uvicorn, etc.) **sí** se instala.
+
+Para **ejecutar** kernels Triton en `project/main.py` en Windows necesitas un entorno **Linux** (p. ej. **WSL2** con CUDA) o seguir la guía actual de PyTorch para tu sistema; la IDE **sí puede abrirse y usar el backend** sin Triton instalado en el venv de Windows.
+
+**Si ves `No module named uvicorn`:** ejecuta `pip install -r requirements.txt` de nuevo (o `pip install "uvicorn[standard]" fastapi pydantic watchdog`).
 
 Comprueba:
 
