@@ -155,6 +155,8 @@ export function App() {
           const msg = String(ev.message ?? "");
           if (code === "EXECUTION_TIMEOUT") {
             setExecError("Execution timed out.");
+          } else if (code === "EXECUTION_FAILED") {
+            setExecError(`Run failed: ${msg}`);
           }
           term?.writeln(`\r\n\x1b[31m${code}: ${msg}\x1b[0m`);
         }

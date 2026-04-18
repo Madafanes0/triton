@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import os
 import sys
 import uuid
@@ -21,6 +22,8 @@ class RunState:
 
 
 _streams: Dict[str, RunState] = {}
+
+_LOG = logging.getLogger("torchforge.execute")
 
 
 def _project_dir() -> Path:
@@ -62,11 +65,14 @@ async def _run_subprocess(
         assert proc.stdout and proc.stderr
 
         async def pump(reader: asyncio.StreamReader, tag: str) -> None:
+            # Chunk reads avoid pipe deadlocks: readline() waits for \n; if the child
+            # prints a long block without newlines (some CUDA/torch paths), the pipe
+            # buffer fills and the process can block until we hit the global timeout.
             while True:
-                line = await reader.readline()
-                if not line:
+                chunk = await reader.read(65536)
+                if not chunk:
                     break
-                text = line.decode(errors="replace")
+                text = chunk.decode(errors="replace")
                 await q.put({"type": "output", "stream": tag, "text": text})
 
         async def pumps_and_wait() -> int:
@@ -93,6 +99,7 @@ async def _run_subprocess(
         )
         await q.put({"type": "exit", "returncode": -1})
     except Exception as exc:
+        _LOG.exception("execute subprocess failed")
         if proc and proc.returncode is None:
             try:
                 proc.kill()
@@ -129,14 +136,20 @@ async def start_execution_async(filepath_rel: str, content: Optional[str]) -> Di
     run_dir.mkdir(parents=True, exist_ok=True)
     target = run_dir / f"run_{run_id}.py"
 
-    if content is not None:
-        target.write_text(content, encoding="utf-8")
+    src = (project / Path(filepath_rel)).resolve()
+    try:
+        src.relative_to(project)
+    except ValueError as exc:
+        raise ValueError("INVALID_PATH") from exc
+
+    # Editor often sends "" before the first load finishes, or the user expects
+    # "what's on disk" — use the project file when content is missing/blank.
+    use_editor_snapshot = content is not None and (
+        content.strip() != "" or not src.is_file()
+    )
+    if use_editor_snapshot:
+        target.write_text(content or "", encoding="utf-8")
     else:
-        src = (project / Path(filepath_rel)).resolve()
-        try:
-            src.relative_to(project)
-        except ValueError as exc:
-            raise ValueError("INVALID_PATH") from exc
         if not src.is_file():
             raise ValueError("FILE_NOT_FOUND")
         target.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
