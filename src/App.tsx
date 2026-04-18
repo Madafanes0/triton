@@ -145,6 +145,11 @@ export function App() {
         } else if (t === "exit") {
           const rc = ev.returncode as number;
           term?.writeln(`\r\n\x1b[33m[exit code ${rc}]\x1b[0m`);
+          if (rc !== 0) {
+            setExecError((prev) =>
+              prev === "Execution timed out." ? prev : `Execution failed (exit code ${rc})`,
+            );
+          }
         } else if (t === "error") {
           const code = String(ev.error ?? "");
           const msg = String(ev.message ?? "");

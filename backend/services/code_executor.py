@@ -54,6 +54,7 @@ async def _run_subprocess(
             "-u",
             str(filepath),
             cwd=str(_project_dir()),
+            stdin=asyncio.subprocess.DEVNULL,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
             env=child_env,
@@ -73,7 +74,8 @@ async def _run_subprocess(
                 pump(proc.stdout, "stdout"),  # type: ignore[union-attr]
                 pump(proc.stderr, "stderr"),  # type: ignore[union-attr]
             )
-            rc = await proc.wait()  # type: ignore[union-attr]
+            await proc.wait()  # type: ignore[union-attr]
+            rc = proc.returncode  # type: ignore[union-attr]
             return int(rc) if rc is not None else -1
 
         rc = await asyncio.wait_for(pumps_and_wait(), timeout=timeout_sec)

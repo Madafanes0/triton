@@ -1,16 +1,27 @@
 """
-TorchForge starter project: PyTorch module + Triton ReLU kernel + tiny training loop.
-Requires a CUDA GPU (Triton does not target CPU for these kernels).
+TorchForge starter project: PyTorch module + optional Triton ReLU kernel + tiny training loop.
+Requires a CUDA GPU for this example.
+
+On Linux, install Triton for the custom kernel: pip install triton
+On Windows, PyPI does not ship Triton wheels — this script falls back to torch.relu automatically.
 """
 
 from __future__ import annotations
 
+import sys
 import time
 
 import torch
 import torch.nn as nn
-import triton
-import triton.language as tl
+
+_HAS_TRITON = False
+try:
+    import triton
+    import triton.language as tl
+
+    _HAS_TRITON = True
+except ImportError:
+    pass
 
 
 def _vram_mb() -> tuple[int, int]:
@@ -22,24 +33,28 @@ def _vram_mb() -> tuple[int, int]:
     return int(used_b / (1024 * 1024)), int(total_b / (1024 * 1024))
 
 
-@triton.jit
-def relu_kernel(
-    x_ptr,
-    y_ptr,
-    n_elements,
-    BLOCK_SIZE: tl.constexpr,
-):
-    pid = tl.program_id(axis=0)
-    block_start = pid * BLOCK_SIZE
-    offsets = block_start + tl.arange(0, BLOCK_SIZE)
-    mask = offsets < n_elements
-    x = tl.load(x_ptr + offsets, mask=mask, other=0.0)
-    y = tl.maximum(x, 0.0)
-    tl.store(y_ptr + offsets, y, mask=mask)
+if _HAS_TRITON:
+
+    @triton.jit
+    def relu_kernel(
+        x_ptr,
+        y_ptr,
+        n_elements,
+        BLOCK_SIZE: tl.constexpr,
+    ):
+        pid = tl.program_id(axis=0)
+        block_start = pid * BLOCK_SIZE
+        offsets = block_start + tl.arange(0, BLOCK_SIZE)
+        mask = offsets < n_elements
+        x = tl.load(x_ptr + offsets, mask=mask, other=0.0)
+        y = tl.maximum(x, 0.0)
+        tl.store(y_ptr + offsets, y, mask=mask)
 
 
 def relu_triton(x: torch.Tensor) -> torch.Tensor:
     assert x.is_cuda, "This example expects CUDA tensors."
+    if not _HAS_TRITON:
+        return torch.relu(x)
     x = x.contiguous()
     out = torch.empty_like(x)
     n = x.numel()
@@ -70,6 +85,12 @@ class TinyMLP(nn.Module):
 def main() -> None:
     if not torch.cuda.is_available():
         raise SystemExit("CUDA is required for this TorchForge example.")
+
+    if not _HAS_TRITON:
+        print(
+            "[info] Triton not available — using torch.relu (install triton on Linux for the sample kernel).",
+            file=sys.stderr,
+        )
 
     torch.manual_seed(0)
     device = torch.device("cuda")
